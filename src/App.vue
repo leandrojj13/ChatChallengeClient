@@ -1,11 +1,37 @@
 <template>
   <div id="app">
-    <div class="container">
-      <h3 class="text-center">Chat Challenge</h3>
+    <div class="container" v-if="user">
+      <h3 class="text-center">Hello {{user.fullName}}, this is Chat Challenge</h3>
+      <h3 class="text-center">
+        <a @click="logout" href="#">Salir</a>
+      </h3>
+      <br />
       <router-view />
     </div>
+    <router-view v-else />
   </div>
 </template>
+
+<script lang="ts">
+import { Component, Prop, Vue } from "vue-property-decorator";
+
+@Component
+export default class App extends Vue {
+  message = "Login";
+
+  userName = null;
+  password = null;
+
+  get user() {
+    return this.$store.getters.user;
+  }
+
+  logout() {
+    this.$store.dispatch("Logout");
+    this.$router.push("/login");
+  }
+}
+</script>
 
 <style lang="less">
 .container {
