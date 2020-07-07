@@ -5,18 +5,8 @@
         <div class="inbox_people">
           <div class="headind_srch">
             <div class="recent_heading">
-              <h4>Recent</h4>
+              <h4>Chat Rooms</h4>
             </div>
-            <!-- <div class="srch_bar">
-              <div class="stylish-input-group">
-                <input type="text" class="search-bar" placeholder="Search" />
-                <span class="input-group-addon">
-                  <button type="button">
-                    <i class="fa fa-search" aria-hidden="true"></i>
-                  </button>
-                </span>
-              </div>
-            </div>-->
           </div>
           <div class="inbox_chat">
             <div
@@ -48,10 +38,17 @@
                 </div>
               </div>
               <div class="incoming_msg" v-else :key="index">
-                <template >
-                  <span v-if="messages[index-1] && messages[index-1].userId != msg.userId" class="time_date">{{msg.userFullName}}</span>
+                <template>
+                  <span
+                    v-if="messages[index-1] && messages[index-1].userId != msg.userId"
+                    class="time_date"
+                  >{{msg.userFullName}}</span>
                   <div class="incoming_msg_img">
-                    <img  v-if="messages[index-1] && messages[index-1].userId != msg.userId" src="https://ptetutorials.com/images/user-profile.png" alt="sunil" />
+                    <img
+                      v-if="messages[index-1] && messages[index-1].userId != msg.userId"
+                      src="https://ptetutorials.com/images/user-profile.png"
+                      alt="sunil"
+                    />
                   </div>
                 </template>
 
@@ -66,6 +63,9 @@
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
+              <button style="right: 50px;" class="msg_send_btn" type="button" @click="setCommand">
+                <i class="fa fa-desktop" aria-hidden="true"></i>
+              </button>
               <input type="text" v-model="message" class="write_msg" placeholder="Type a message" />
               <button class="msg_send_btn" type="button" @click="saveMessage">
                 <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
@@ -115,6 +115,22 @@ export default class Home extends Vue {
     });
     this.connection.on("UserJoined", function(msg) {
       console.log(msg);
+    });
+    this.connection.on("StockInfo", function(response) {
+      debugger;
+      if (self.currentRoom.id == response.chatRoomId) {
+        var msg = {
+          chatRoomId: self.currentRoom.id,
+          userFullName: "Stock bot",
+          message: response.message,
+          createdDate: new Date()
+        };
+        self.messages.push(msg);
+        self.$nextTick().then(r => {
+          var historyMessages = document.getElementById("historyMessages");
+          historyMessages.scrollTop = historyMessages.scrollHeight;
+        });
+      }
     });
     this.connection
       .start()
@@ -178,6 +194,7 @@ export default class Home extends Vue {
 
   saveMessage() {
     if (this.message) {
+      this.message = this.message.trim();
       var model = {
         userId: this.user.id,
         message: this.message,
@@ -191,17 +208,37 @@ export default class Home extends Vue {
         },
         body: JSON.stringify(model)
       };
-      fetch(Url.ApiURL + "/ChatRoomMessage", requestConfig)
-        .then(resp => resp.json())
-        .then(response => {
-          this.message = null;
-          this.getCurrentChatRoomMessage();
-          this.connection.invoke("SendMessage", this.currentRoom.id);
-        })
-        .catch(err => {});
+      if (this.message.substr(0, 7) == "/stock=") {
+        this.messages.push(model);
+        this.$nextTick().then(r => {
+          var historyMessages = document.getElementById("historyMessages");
+          historyMessages.scrollTop = historyMessages.scrollHeight;
+        });
+
+        model.message = model.message.substr(7);
+        requestConfig.body = JSON.stringify(model);
+        this.message = null;
+        fetch(Url.ApiURL + "/ChatRoomMessage/StockInfo", requestConfig)
+          .then(resp => resp.json())
+          .then(response => {})
+          .catch(err => {})
+          .finally(() => {});
+      } else {
+        fetch(Url.ApiURL + "/ChatRoomMessage", requestConfig)
+          .then(resp => resp.json())
+          .then(response => {
+            this.message = null;
+            this.getCurrentChatRoomMessage();
+            this.connection.invoke("SendMessage", this.currentRoom.id);
+          })
+          .catch(err => {});
+      }
     }
   }
 
+  setCommand() {
+    this.message = "/stock=stock_code";
+  }
   get user() {
     return this.$store.getters.user;
   }
