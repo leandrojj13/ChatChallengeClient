@@ -45,7 +45,7 @@
                   >{{msg.userFullName}}</span>
                   <div class="incoming_msg_img">
                     <img
-                      v-if="messages[index-1] && messages[index-1].userId != msg.userId"
+                      v-if="!messages[index-1] || (messages[index-1] && messages[index-1].userId != msg.userId) "
                       src="https://ptetutorials.com/images/user-profile.png"
                       alt="sunil"
                     />
@@ -66,7 +66,7 @@
               <button style="right: 50px;" class="msg_send_btn" type="button" @click="setCommand">
                 <i class="fa fa-desktop" aria-hidden="true"></i>
               </button>
-              <input type="text" v-model="message" class="write_msg" placeholder="Type a message" />
+              <input type="text" v-model="message" class="write_msg" placeholder="Type a message" v-on:keyup.enter="saveMessage" />
               <button class="msg_send_btn" type="button" @click="saveMessage">
                 <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
               </button>
