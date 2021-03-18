@@ -29,5 +29,13 @@ npm run build
 npm run lint
 ```
 
+
+### Mock users
+```
+Username: Jhon23  -  Password: 9j^9`5'ew7D,7g'Z
+Username: Leandro12  -  Password: >,F-hT)/h(2BcGqH
+```
+
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
